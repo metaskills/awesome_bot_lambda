@@ -1,3 +1,3 @@
 Rails.application.routes.draw do
-  root to: 'application#index'
+  match '/', to: 'application#index', via: [:get, :post], as: 'root'
 end

@@ -1,12 +1,14 @@
 
 # README
 
+Little AWS Lambda to validate links in awesome projects. Uses the [Lamby](https://github.com/customink/lamby) gem for simple Rails & AWS Lambda intgration along with the [awesome_bot](https://github.com/dkhamsing/awesome_bot) gem.
+
 
 ## Setup
 
 #### Installing AWS CLI & SAM
 
-This is fairly easy on Macs using Homebrew. For other platforms or first time installers, please follow the [full guides](https://github.com/customink/lamby/issues/18) and configure your AWS CLI before proceeding.
+If you have these installed skip this setp. However, each are fairly easy on Macs using Homebrew. For other platforms or first time installers, please follow the [full guides](https://github.com/customink/lamby/issues/18) and configure your AWS CLI before proceeding.
 
 ```shell
 $ brew install awscli
@@ -24,7 +26,7 @@ aws s3 mb "s3://lamby.cloudformation.awesomebotlambda"
 
 #### Configuration
 
-Create the SSM Parameter store for the `RAILS_MASTER_KEY`.
+Create the SSM Parameter store for the `RAILS_MASTER_KEY`. WARNING: This is checked into git source only so I can share this project. Please change/delete if you fork it.
 
 ```shell
 aws ssm put-parameter \

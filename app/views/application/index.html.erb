@@ -1,0 +1,15 @@
+
+<div id="awesome">
+  <% root_path = Rails.env.production? ? Rails.env : '' %>
+  <%= form_tag root_path, method: :post, class: 'dropzone', id: 'awesome_file' do %>
+    <div class="fallback">
+      <%= file_field_tag 'file' %>
+    </div>
+    <div class="dz-message">
+      <h3>Drop Awesome <br>File Here!</h3>
+    </div>
+  <% end %>
+</div>
+
+<div id="report">
+</div>

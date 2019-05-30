@@ -4,11 +4,79 @@
     <title>AwesomeBotLambda</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
-    <%= stylesheet_link_tag 'application', media: 'all' %>
-    <%= javascript_pack_tag 'application' %>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.js"></script>
+    <style>
+      html, body { margin: 5px; padding: 0; }
+      html, body, * { box-sizing: border-box; }
+      #awesome {
+        float: left;
+        width: calc(20vw - 15px);
+      }
+      #awesome_file {
+        display: flex;
+        width: calc(20vw - 15px);
+        height: 200px;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        border-radius: 6px;
+      }
+      #awesome_file .dz-image { display: none; }
+      #awesome_file .dz-details { display: none; }
+      #awesome_file .dz-error-message { display: none; }
+      #awesome_file .dz-success-mark { display: none; }
+      #awesome_file .dz-error-mark { display: none; }
+      #awesome_file .dz-preview {
+        margin: 0;
+        width: inherit;
+        height: inherit;
+      }
+      #awesome_file.dz-drag-hover:after {
+        content: '';
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-image: url('http://i.giphy.com/urvsFBDfR6N32.gif');
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        opacity: 0.3;
+      }
+      #report {
+        float: right;
+        width: calc(80vw - 15px);
+        height: calc(100vh - 20px);
+        border: 1px solid #dcdcdc;
+        background-color: #f5f5f5;
+        unicode-bidi: embed;
+        font-family: monospace;
+        white-space: pre;
+        overflow: scroll;
+        padding: 10px;
+        border-radius: 6px;
+      }
+    </style>
+    <script>
+      window.Dropzone.options.awesomeFile = {
+        maxFiles: 1,
+        createImageThumbnails: false,
+        accept: function(file, done) {
+          $('#report').empty();
+          done();
+        },
+        success: function(file) {
+          const data = JSON.parse(file.xhr.response);
+          $('#report').text(data.report);
+          this.removeAllFiles();
+        }
+      };
+    </script>
   </head>
-
   <body>
     <%= yield %>
   </body>

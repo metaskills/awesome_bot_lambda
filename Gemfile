@@ -4,6 +4,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 gem 'rails', '~> 6.0.0.rc1'
 gem 'aws-sdk-ssm'
 gem 'sass-rails'
+gem 'awesome_bot'
 gem 'lamby', require: false
 
 group :development, :test do
