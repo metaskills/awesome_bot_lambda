@@ -1,7 +1,6 @@
 
 <div id="awesome">
-  <% root_path = Rails.env.production? ? Rails.env : '' %>
-  <%= form_tag root_path, method: :post, class: 'dropzone', id: 'awesome_file' do %>
+  <%= form_tag upload_path, method: :post, class: 'dropzone', id: 'awesome_file' do %>
     <div class="fallback">
       <%= file_field_tag 'file' %>
     </div>

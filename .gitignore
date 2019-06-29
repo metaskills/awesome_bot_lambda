@@ -22,3 +22,5 @@
 
 # Lamby
 /.aws-sam
+/bin/deploy-prod-ci
+/bin/deploy-prod-me

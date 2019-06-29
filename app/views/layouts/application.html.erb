@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>AwesomeBotLambda</title>
-    <%= csrf_meta_tags %>
+    <%= csrf_meta_tags unless response.cache_control[:public] %>
     <%= csp_meta_tag %>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/min/dropzone.min.css">
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -69,7 +69,7 @@
           $('#report').empty();
           done();
         },
-        success: function(file) {
+        complete: function(file) {
           const data = JSON.parse(file.xhr.response);
           $('#report').text(data.report);
           this.removeAllFiles();

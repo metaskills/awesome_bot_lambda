@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: AwesomeBotLambda Lambda
+Description: AwesomeBotLambda Lambda (ALB)
 
 Parameters:
 
@@ -10,41 +10,57 @@ Parameters:
     AllowedValues:
       - staging
       - production
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
 
 Resources:
 
-  RailsApi:
-    Type: AWS::Serverless::Api
+  RailsLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      StageName: !Ref RailsEnv
-      EndpointConfiguration: REGIONAL
-      DefinitionBody:
-        swagger: 2.0
-        info: { title: !Ref 'AWS::StackName' }
-        basePath: !Join [ '', [ '/', !Ref RailsEnv ] ]
-        schemes: [ 'https' ]
-        paths:
-          /:
-            x-amazon-apigateway-any-method:
-              x-amazon-apigateway-integration:
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RailsFunction.Arn}:live/invocations
-                httpMethod: POST
-                type: aws_proxy
-          /{resource+}:
-            x-amazon-apigateway-any-method:
-              parameters:
-                - name: resource
-                  in: path
-                  required: true
-                  type: string
-              x-amazon-apigateway-integration:
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RailsFunction.Arn}:live/invocations
-                httpMethod: POST
-                type: aws_proxy
-        x-amazon-apigateway-binary-media-types:
-          - '*/*'
+      Name: awesomebotlambda
+      Scheme: internet-facing
+      Subnets: !Ref Subnets
+      SecurityGroups:
+        - !Ref RailsSecurityGroup
+
+  RailsLoadBalancerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn: RailsFunctionInvokePermission
+    Properties:
+      TargetType: lambda
+      Targets:
+        - Id: !GetAtt RailsFunction.Arn
+
+  RailsLoadBalancerHttpListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref RailsLoadBalancerTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref RailsLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  RailsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow HTTP
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  RailsFunctionInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt RailsFunction.Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: elasticloadbalancing.amazonaws.com
 
   RailsFunction:
     Type: AWS::Serverless::Function
@@ -57,7 +73,7 @@ Resources:
       Environment:
         Variables:
           RAILS_ENV: !Ref RailsEnv
-      FunctionName: !Join [ '', [ 'myapp-', !Ref RailsEnv, '-', !Ref 'AWS::Region' ] ]
+      FunctionName: !Join [ '', [ 'awesomebotlambda-', !Ref RailsEnv, '-', !Ref 'AWS::Region' ] ]
       Policies:
         - Version: "2012-10-17"
           Statement:
@@ -69,26 +85,12 @@ Resources:
                 - ssm:GetParameterHistory
               Resource:
                 - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/config/awesomebotlambda/*
-      Events:
-        Root:
-          Type: Api
-          Properties:
-            Path: /
-            Method: ANY
-            RestApiId: !Ref RailsApi
-        RailsAppAll:
-          Type: Api
-          Properties:
-            Path: /{resource+}
-            Method: ANY
-            RestApiId: !Ref RailsApi
       AutoPublishAlias: live
 
 Outputs:
 
-  RailsApiUrl:
-    Description: API Gateway Endpoint
-    Value: !Sub "https://${RailsApi}.execute-api.${AWS::Region}.amazonaws.com/${RailsEnv}/"
+  RailsLoadBalancerDNSNAme:
+      Value: !GetAtt RailsLoadBalancer.DNSName
 
   RailsFunctionArn:
     Description: Lambda ARN

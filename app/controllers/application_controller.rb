@@ -2,12 +2,16 @@ class ApplicationController < ActionController::Base
   after_action  :delete_tempfiles
 
   def index
-    if request.post?
+    render
+  end
+
+  def upload
+    if tempfile
       report = AwesomeRunner.new(tempfile).report
       report.sub! /#<File:.*>?/, filename
       render json: { report: report }
     else
-      render
+      render json: { report: '⚠️ Error or no file.' }, status: :unprocessable_entity
     end
   end
 
@@ -22,7 +26,7 @@ class ApplicationController < ActionController::Base
   end
 
   def filename
-    file.original_filename
+    file.try(:original_filename)
   end
 
   def delete_tempfiles
