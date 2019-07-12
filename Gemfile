@@ -5,7 +5,7 @@ gem 'rails', '~> 6.0.0.rc1'
 gem 'aws-sdk-ssm'
 gem 'sass-rails'
 gem 'awesome_bot'
-gem 'lamby', require: false, github: 'customink/lamby', branch: 'loadBalancer'
+gem 'lamby', require: false
 
 group :development, :test do
   gem 'byebug'
