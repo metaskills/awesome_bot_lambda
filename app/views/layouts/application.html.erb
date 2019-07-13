@@ -13,6 +13,7 @@
       #awesome {
         float: left;
         width: calc(20vw - 15px);
+        font-family: Arial, Helvetica, sans-serif;
       }
       #awesome_file {
         display: flex;
@@ -47,6 +48,16 @@
         background-repeat: no-repeat;
         opacity: 0.3;
       }
+      #awesome_url {
+        height: 2.5rem;
+        width: 100%;
+        margin-top: 1rem;
+        padding: 0 0.5rem;
+        box-sizing: border-box;
+        border: 2px solid rgba(0,0,0,0.3);
+        border-radius: 3px;
+        font-size: 0.8rem;
+      }
       #report {
         float: right;
         width: calc(80vw - 15px);
@@ -61,23 +72,43 @@
         border-radius: 6px;
       }
     </style>
-    <script>
-      window.Dropzone.options.awesomeFile = {
-        maxFiles: 1,
-        createImageThumbnails: false,
-        accept: function(file, done) {
-          $('#report').empty();
-          done();
-        },
-        complete: function(file) {
-          const data = JSON.parse(file.xhr.response);
-          $('#report').text(data.report);
-          this.removeAllFiles();
-        }
-      };
-    </script>
   </head>
   <body>
     <%= yield %>
   </body>
+  <script>
+    window.Dropzone.options.awesomeFile = {
+      maxFiles: 1,
+      createImageThumbnails: false,
+      accept: function(file, done) {
+        $('#report').empty();
+        $('#awesome_url').val('');
+        done();
+      },
+      complete: function(file) {
+        const data = JSON.parse(file.xhr.response);
+        $('#report').text(data.report);
+        $('#awesome_url').val('');
+        this.removeAllFiles();
+      }
+    };
+    $('#awesome_url').on('paste', function(e){
+      const cb = e.originalEvent.clipboardData || window.clipboardData;
+      const token = $('meta[name=csrf-token]').attr('content');
+      $.ajax({
+        type: "POST",
+        url: '/download',
+        data: JSON.stringify({ url: cb.getData('Text'), authenticity_token: token }),
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(data){
+          $('#report').text(data.report);
+          $('#awesome_url').val('');
+        },
+        failure: function(error) {
+          $('#awesome_url').val('');
+        }
+      });
+    });
+  </script>
 </html>
